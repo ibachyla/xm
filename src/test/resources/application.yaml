@@ -1,0 +1,10 @@
+xm:
+  web-ui:
+    # Enables or disables configuration for the web UI tests
+    enabled: true
+    # Possible values: chrome, firefox, opera, edge, iexplorer, chromium, safari
+    browser: chrome
+    # Resolutions used according to the task: 3440x1440 (max resolution of my monitor), 1024x768, 800x600
+    width: 3440
+    height: 1440
+    homepage: https://www.xm.com/
