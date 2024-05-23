@@ -8,7 +8,6 @@ import com.github.ibachyla.xm.web.elements.PrivacyPopup;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.LoadableComponent;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -40,10 +39,6 @@ public abstract class BasePage<T extends LoadableComponent<T>> extends LoadableC
 
         this.privacyPopup = new PrivacyPopup(elementActions);
         this.mainMenu = new MainMenu(elementActions);
-
-        PageFactory.initElements(driver(), this);
-        PageFactory.initElements(driver(), privacyPopup);
-        PageFactory.initElements(driver(), mainMenu);
     }
 
     public void dismissPrivacyPopupIfVisible() {

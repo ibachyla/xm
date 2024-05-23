@@ -3,14 +3,15 @@ package com.github.ibachyla.xm.web.pages;
 import com.github.ibachyla.xm.web.WebUiProperties;
 import com.github.ibachyla.xm.web.actions.ElementActions;
 import com.github.ibachyla.xm.web.driver.WebDriverProvider;
+import com.github.ibachyla.xm.web.elements.TopBar;
 import com.github.ibachyla.xm.web.models.Stock;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class StocksPage extends BasePage<StocksPage> {
 
     private static final String URL = "stocks";
-    private static final String DATA_HEADER = "Stocks - Spreads / Conditions";
+    private static final String HEADER = "STOCKS";
 
     private static final String COUNTRY_FILTER_CSS_LOCATOR_TEMPLATE = ".table-country-filter > button[data-value='%s']";
     private static final String STOCK_CELL_CSS_LOCATOR_TEMPLATE = "td[data-xm-qa-name='%s']";
@@ -43,22 +44,25 @@ public class StocksPage extends BasePage<StocksPage> {
     private static final By READ_MORE_LINK = By.cssSelector(
             STOCK_CELL_CSS_LOCATOR_TEMPLATE.formatted("url") + " > a");
 
-    @FindBy(css = ".paginate_button.next")
-    private WebElement nextPageButton;
+    private static final By NEXT_PAGE_BUTTON = By.cssSelector(".paginate_button.next");
+
+    private final TopBar topBar;
 
     protected StocksPage(WebUiProperties webUiProperties,
                          WebDriverProvider driverProvider,
                          ElementActions elementActions) {
         super(URL, webUiProperties, driverProvider, elementActions);
+
+        this.topBar = new TopBar(elementActions);
     }
 
     @Override
     public void isLoaded() throws Error {
         super.isLoaded();
 
-        assertThat(driver().getPageSource())
+        assertThat(topBar.hasHeader(HEADER))
                 .as("Check that Stocks page is loaded")
-                .contains(DATA_HEADER);
+                .isTrue();
     }
 
     public void filterStocksByCountry(String country) {
@@ -67,9 +71,7 @@ public class StocksPage extends BasePage<StocksPage> {
     }
 
     public boolean isCountryFilterSelected(String country) {
-        return elementActions.find(countryFilter(country))
-                .map(filter -> filter.getAttribute("class").contains("active"))
-                .orElse(false);
+        return elementActions.containsClass(countryFilter(country), "active");
     }
 
     public Optional<Stock> findStock(String symbol) {
@@ -78,9 +80,9 @@ public class StocksPage extends BasePage<StocksPage> {
         Optional<WebElement> symbolCell;
 
         do {
-            symbolCell = findSymbolPresent(symbol);
+            symbolCell = findSymbol(symbol);
             if (isLastPage()) break;
-            elementActions.click(nextPageButton);
+            elementActions.click(NEXT_PAGE_BUTTON);
         } while (symbolCell.isEmpty());
 
         return symbolCell.map(this::createStock);
@@ -89,22 +91,27 @@ public class StocksPage extends BasePage<StocksPage> {
     public void readMore(String symbol) {
         log.info("Selecting 'Read More' for stock with symbol: {}", symbol);
 
-        findSymbolPresent(symbol)
+        WebElement stockRow = findSymbol(symbol)
                 .map(this::getParentRow)
-                .map(row -> row.findElement(READ_MORE_LINK))
-                .ifPresent(elementActions::click);
-    }
+                .orElseThrow(() -> new NoSuchElementException("Stock not found"));
 
-    private By countryFilter(String country) {
-        return By.cssSelector(String.format(COUNTRY_FILTER_CSS_LOCATOR_TEMPLATE, country));
+        WebElement readMoreLink = stockRow.findElement(READ_MORE_LINK);
+        if(elementActions.isVisible(readMoreLink)) {
+            elementActions.click(readMoreLink);
+            return;
+        }
+
+        elementActions.click(stockRow.findElement(DESCRIPTION_CELL));
+        readMoreLink = stockRow.findElement(By.xpath("./following-sibling::tr//a"));
+        elementActions.click(readMoreLink);
     }
 
     private boolean isLastPage() {
-        return nextPageButton.getAttribute("class").contains("disabled");
+        return elementActions.containsClass(NEXT_PAGE_BUTTON, "disabled");
     }
 
-    private Optional<WebElement> findSymbolPresent(String symbol) {
-        return driver().findElements(SYMBOL_CELL)
+    private Optional<WebElement> findSymbol(String symbol) {
+        return elementActions.findAll(SYMBOL_CELL)
                 .stream()
                 .filter(cell -> cell.getText().equals(symbol))
                 .findFirst();
@@ -130,6 +137,10 @@ public class StocksPage extends BasePage<StocksPage> {
     }
 
     private String getStockValue(WebElement stockRow, By cellLocator) {
-        return stockRow.findElement(cellLocator).getText();
+        return stockRow.findElement(cellLocator).getAttribute("textContent").trim();
+    }
+
+    private By countryFilter(String country) {
+        return By.cssSelector(String.format(COUNTRY_FILTER_CSS_LOCATOR_TEMPLATE, country));
     }
 }

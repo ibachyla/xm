@@ -27,6 +27,7 @@ dependencies {
     implementation("org.seleniumhq.selenium:selenium-java:4.20.0")
     implementation("io.github.bonigarcia:webdrivermanager:5.8.0")
     implementation("org.assertj:assertj-core:3.25.1")
+    implementation("io.rest-assured:rest-assured:5.4.0")
 
     compileOnly("org.projectlombok:lombok")
 

@@ -5,6 +5,10 @@ xm:
     # Possible values: chrome, firefox, opera, edge, iexplorer, chromium, safari
     browser: chrome
     # Resolutions used according to the task: 3440x1440 (max resolution of my monitor), 1024x768, 800x600
-    width: 3440
-    height: 1440
+    width: 800
+    height: 600
     homepage: https://www.xm.com/
+  api:
+    # Enables or disables configuration for the API tests
+    enabled: true
+    base-url: https://swapi.dev/api/
