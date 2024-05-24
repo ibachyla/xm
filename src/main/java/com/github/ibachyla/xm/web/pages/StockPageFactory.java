@@ -8,16 +8,25 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+/**
+ * Factory for creating {@link StockPage} instances.
+ */
 @Lazy
 @Component
 @RequiredArgsConstructor
 public class StockPageFactory {
 
-    private final WebUiProperties webUiProperties;
-    private final WebDriverProvider driverProvider;
-    private final ElementActions elementActions;
+  private final WebUiProperties webUiProperties;
+  private final WebDriverProvider driverProvider;
+  private final ElementActions elementActions;
 
-    public StockPage create(Stock stock) {
-        return new StockPage(stock, webUiProperties, driverProvider, elementActions);
-    }
+  /**
+   * Creates a new {@link StockPage} instance.
+   *
+   * @param stock the stock this page belongs to
+   * @return a new {@link StockPage} instance
+   */
+  public StockPage create(Stock stock) {
+    return new StockPage(stock, webUiProperties, driverProvider, elementActions);
+  }
 }

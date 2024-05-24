@@ -13,23 +13,35 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration class for the API module.
+ */
 @Configuration
 @ComponentScan
 @ConfigurationPropertiesScan
 @ConditionalOnProperty(name = "xm.api.enabled", havingValue = "true")
 public class ApiConfiguration {
 
-    @Bean
-    public RequestSpecification reqSpec(ApiProperties apiProperties) {
-        RestAssuredConfig config = RestAssured.config()
-                .httpClient(HttpClientConfig.httpClientConfig()
-                        .setParam(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000)
-                        .setParam(CoreConnectionPNames.SO_TIMEOUT, 1000));
+  /**
+   * Creates a base request specification for all API requests.
+   *
+   * @param apiProperties API properties
+   * @return base request specification
+   */
+  @Bean
+  public RequestSpecification reqSpec(ApiProperties apiProperties) {
+    RestAssuredConfig config = RestAssured.config()
+        .httpClient(HttpClientConfig.httpClientConfig()
+            .setParam(CoreConnectionPNames.CONNECTION_TIMEOUT, 5000)
+            .setParam(CoreConnectionPNames.SO_TIMEOUT, 5000));
 
-        return new RequestSpecBuilder()
-                .setConfig(config)
-                .setBaseUri(apiProperties.baseUrl())
-                .log(LogDetail.ALL)
-                .build();
-    }
+    return new RequestSpecBuilder()
+        .setConfig(config)
+        .setBaseUri(apiProperties.baseUrl())
+        // I'd prefer to use filters
+        // (https://github.com/rest-assured/rest-assured/wiki/Usage#filters) for better integration
+        // with the main logger, but that should be enough for a small task.
+        .log(LogDetail.ALL)
+        .build();
+  }
 }

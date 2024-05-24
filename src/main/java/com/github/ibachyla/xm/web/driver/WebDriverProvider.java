@@ -7,5 +7,10 @@ import org.openqa.selenium.WebDriver;
  */
 public interface WebDriverProvider {
 
-    WebDriver get();
+  /**
+   * Get a WebDriver instance.
+   *
+   * @return WebDriver instance
+   */
+  WebDriver get();
 }
